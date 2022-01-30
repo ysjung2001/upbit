@@ -17,7 +17,7 @@ def post_message(token, channel, text):
         data={"channel": channel,"text": text}
     )
     print(response)
-myToken = "xoxb-3039386859121-3012140270775-fDPWUWIQJeSLIY15EdXC2O8R"
+myToken = "xoxb-3039386859121-3012140270775-9jLU5uYNKfgSrp0Gu3xMIIy8"
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
@@ -84,6 +84,10 @@ alarm_vol =0
 condition_BB=0
 coin_time=0
 rsi=0
+buy_status = 0
+loss_target =0
+earn_target=0
+buy_price=0
 
 access = "FICHOGCS0LF4s7mQXxJJLsl4k6CZrTlmJF9gX6gz"          
 secret = "sOxljDJS0ZxJVEkzBuqBWz0MZM4szO1rUazoc92O"  
@@ -119,42 +123,55 @@ while True:
 
              #매수 조건
              condition_Total = (condition_vol * condition_MA) + (condition_vol * condition_BB)
-
-             #알람 조건 List
-                # 거래량
-             if vol>5:
-                 alarm_vol =1
-             else :
-                 alarm_vol =0
             
-             #알람 발생 
-            #  if condition_MA ==1:
-            #      post_message(myToken,"#auto","정배열 상태")
-            #  if condition_BB ==1:
-            #      post_message(myToken,"#auto","볼린져 밴드 하단")
-            #  if alarm_vol ==1:
-            #      post_message(myToken,"#auto","거래량 5 이상 발생")
-            #      post_message(myToken,"#auto",vol)
-            #  if condition_Total >0:
-            #      post_message(myToken,"#auto","매수 조건 달성")  
-             
              df = pd.DataFrame(upbit.get_balances())
              #print(df)
              length = len(df.index)
              money = float(df.iloc[0]['balance'])
              #for i in "KRW" :#range(1,length):
              #money = money + float(df.iloc[1]['balance'])*float(df.iloc[1]['avg_buy_price'])
-                        
-             buymessage = "비트코인\n매수 조건 거래량 / 이동평균선 / 볼린져밴드 : %d / %d / %d \n 매수의견 : %d \n 잔액 : %d KRW" %(condition_vol, condition_MA, condition_BB, condition_Total, money)
-             post_message(myToken,"#auto",buymessage)
 
-
+             buymessage = "\n\n비트코인\n매수 조건 거래량 / 이동평균선 / 볼린져밴드 : %d / %d / %d \n 매수의견 : %d \n 잔액 : %d KRW" %(condition_vol, condition_MA, condition_BB, condition_Total, money)
+             print(buymessage)      
+             krw = upbit.get_balances("KRW")        
+             
               #조건 달성시 매수 행동
-             if (condition_Total>0):
-                buymessage = "구매평단가 : %0.1f" %(current_price)
+             if buy_status == 0 and condition_Total>0:
+                buymessage = "매수\n구매평단가 : %0.1f" %(current_price)
                 post_message(myToken,"#auto",buymessage)
-                buymessage = time.ctime()
+                # buymessage = time.ctime()
+                # post_message(myToken,"#auto",buymessage)
+                buymessage = "비트코인\n매수 조건 거래량 / 이동평균선 / 볼린져밴드 : %d / %d / %d \n 매수의견 : %d \n 잔액 : %d KRW" %(condition_vol, condition_MA, condition_BB, condition_Total, money)
                 post_message(myToken,"#auto",buymessage)
+                buy_status = 1
+                loss_target = current_price * 0.99
+                earn_target = current_price * 1.005
+                buy_price = current_price
+                ######if krw > 5000:
+                ######    upbit.buy_market_order("KRW-BTC", krw*0.9995)
+        
+
+             elif buy_status == 1 :
+                if current_price < loss_target:
+                        buymessage = "손절, \n구매가 : %0.1f\n판매가: %0.1f" %(buy_price, current_price)
+                        post_message(myToken,"#auto",buymessage)
+                        buy_status = 0
+                        #####btc = upbit.get_balances("BTC")
+                        #####if btc > 0.00008:
+                        #####upbit.sell_market_order("KRW-BTC", btc*0.9995)
+                elif current_price > earn_target:
+                        buymessage = "익절, \n구매가: %0.1f\n판매가: %0.1f" %(buy_price, current_price)
+                        post_message(myToken,"#auto",buymessage)
+                        buy_status = 0
+                        #####btc = upbit.get_balances("BTC")
+                        #####if btc > 0.00008:
+                        #####upbit.sell_market_order("KRW-BTC", btc*0.9995)
+
+             print('비트코인 구매여부', buy_status)
+             print('비트코인 현재가격', current_price)
+             print('구매가', buy_price)
+             print('손절가', loss_target)
+             print('익절가', earn_target)
 
         time.sleep(10)
 
