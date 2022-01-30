@@ -17,7 +17,7 @@ def post_message(token, channel, text):
         data={"channel": channel,"text": text}
     )
     print(response)
-myToken = "xoxb-3039386859121-3012140270775-R2B2ZCDQ8U4QK6key74wrqIX"
+myToken = "xoxb-3039386859121-3012140270775-Ly5mapHbHK6ec746iJfbsBm1"
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
@@ -147,6 +147,7 @@ while True:
                         
              buymessage = "비트코인\n매수 조건 거래량 / 이동평균선 / 볼린져밴드 : %d / %d / %d \n 매수의견 : %d \n 잔액 : %d KRW" %(condition_vol, condition_MA, condition_BB, condition_Total, money)
              post_message(myToken,"#auto",buymessage)
+
 
               #조건 달성시 매수 행동
              if (condition_Total>0):
