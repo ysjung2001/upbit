@@ -17,7 +17,7 @@ def post_message(token, channel, text):
         data={"channel": channel,"text": text}
     )
     print(response)
-myToken = "xoxb-3039386859121-3012140270775-EPHGuBjrzdiuDv0da2pgsVFp"
+myToken = "xoxb-3039386859121-3012140270775-y4KWFYaSsPxqOPxfqPDZURk8"
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
